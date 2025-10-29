@@ -1,0 +1,100 @@
+// thread.d++ - D++ Standart Kütüphanesi: Çoklu İş Parçacığı (Multithreading)
+
+module std.thread;
+
+import std.core;
+import std.time;
+
+class Thread {
+    private native id;
+    private Func<void()> entry;
+
+    public Thread(Func<void()> fn) {
+        this.entry = fn;
+    }
+
+    public void start() {
+        this.id = nativeThreadStart(this.entry);
+    }
+
+    public void join() {
+        nativeThreadJoin(this.id);
+    }
+
+    public static void sleep(Duration duration) {
+        nativeSleep(duration.totalMilliseconds());
+    }
+}
+
+class Mutex {
+    private native handle;
+
+    public this() {
+        handle = nativeMutexCreate();
+    }
+
+    public void lock() {
+        nativeMutexLock(handle);
+    }
+
+    public void unlock() {
+        nativeMutexUnlock(handle);
+    }
+
+    public void destroy() {
+        nativeMutexDestroy(handle);
+    }
+
+    ~this() {
+        destroy();
+    }
+}
+
+class Condition {
+    private native cond;
+    private Mutex mtx;
+
+    public this(Mutex mutex) {
+        this.mtx = mutex;
+        cond = nativeCondCreate();
+    }
+
+    public void wait() {
+        nativeCondWait(cond, mtx.handle);
+    }
+
+    public void notifyOne() {
+        nativeCondNotifyOne(cond);
+    }
+
+    public void notifyAll() {
+        nativeCondNotifyAll(cond);
+    }
+
+    public void destroy() {
+        nativeCondDestroy(cond);
+    }
+
+    ~this() {
+        destroy();
+    }
+}
+
+// Native bindinglerin alt seviyede tanımlandığı yer
+extern(C) {
+    native id nativeThreadStart(Func<void()> entry);
+    void nativeThreadJoin(native id);
+
+    void nativeSleep(int ms);
+
+    native handle nativeMutexCreate();
+    void nativeMutexLock(native handle);
+    void nativeMutexUnlock(native handle);
+    void nativeMutexDestroy(native handle);
+
+    native handle nativeCondCreate();
+    void nativeCondWait(native handle, native handle);
+    void nativeCondNotifyOne(native handle);
+    void nativeCondNotifyAll(native handle);
+    void nativeCondDestroy(native handle);
+}

@@ -1,0 +1,80 @@
+// time.d++
+
+module std.time;
+
+import native.time;
+
+// Duration tipi: nanosaniye cinsinden zaman aralığı
+struct Duration {
+    i64 nanoseconds;
+
+    Duration(i64 ns) {
+        this.nanoseconds = ns;
+    }
+
+    static Duration seconds(i64 s) {
+        return Duration(s * 1_000_000_000);
+    }
+
+    static Duration milliseconds(i64 ms) {
+        return Duration(ms * 1_000_000);
+    }
+
+    static Duration microseconds(i64 us) {
+        return Duration(us * 1_000);
+    }
+
+    static Duration nanoseconds(i64 ns) {
+        return Duration(ns);
+    }
+
+    i64 totalSeconds() const {
+        return nanoseconds / 1_000_000_000;
+    }
+
+    i64 totalMilliseconds() const {
+        return nanoseconds / 1_000_000;
+    }
+
+    i64 totalMicroseconds() const {
+        return nanoseconds / 1_000;
+    }
+
+    i64 totalNanoseconds() const {
+        return nanoseconds;
+    }
+}
+
+// TimePoint: yüksek çözünürlüklü zaman ölçümü
+struct TimePoint {
+    i64 ticks;
+
+    static TimePoint now() {
+        return TimePoint(native_time_now());
+    }
+
+    Duration operator-(TimePoint other) const {
+        return Duration(this.ticks - other.ticks);
+    }
+
+    TimePoint operator+(Duration d) const {
+        return TimePoint(this.ticks + d.totalNanoseconds());
+    }
+
+    TimePoint operator-(Duration d) const {
+        return TimePoint(this.ticks - d.totalNanoseconds());
+    }
+}
+
+// Uyku fonksiyonları
+func sleep(Duration d) {
+    native_sleep(d.totalMilliseconds());
+}
+
+func sleepMs(i64 ms) {
+    native_sleep(ms);
+}
+
+func sleepSeconds(i64 sec) {
+    native_sleep(sec * 1000);
+}

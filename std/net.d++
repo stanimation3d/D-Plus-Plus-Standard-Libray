@@ -1,0 +1,94 @@
+// net.d++ - D++ Networking Library
+
+module net;
+
+import std.string;
+import std.array;
+import std.conv;
+import std.stdio;
+import std.socket;
+
+// Basic TCP Client
+class TcpClient {
+    private TcpSocket socket;
+    private string address;
+    private ushort port;
+
+    this(string address, ushort port) {
+        this.address = address;
+        this.port = port;
+        this.socket = new TcpSocket();
+    }
+
+    void connect() {
+        socket.connect(new InternetAddress(address, port));
+    }
+
+    void send(string data) {
+        socket.send(data);
+    }
+
+    string receive(size_t size = 1024) {
+        auto buffer = new char[](size);
+        auto received = socket.receive(buffer);
+        return buffer[0 .. received].idup;
+    }
+
+    void close() {
+        socket.close();
+    }
+}
+
+// Basic TCP Server
+class TcpServer {
+    private TcpSocket server;
+    private ushort port;
+
+    this(ushort port) {
+        this.port = port;
+        this.server = new TcpSocket();
+    }
+
+    void bindAndListen(int backlog = 10) {
+        server.bind(new InternetAddress(port));
+        server.listen(backlog);
+    }
+
+    TcpSocket accept() {
+        return server.accept();
+    }
+
+    void close() {
+        server.close();
+    }
+}
+
+// UDP Socket Wrapper
+class UdpSocketWrapper {
+    private UdpSocket socket;
+
+    this() {
+        this.socket = new UdpSocket();
+    }
+
+    void bind(ushort port) {
+        socket.bind(new InternetAddress(port));
+    }
+
+    void sendTo(string data, string address, ushort port) {
+        socket.sendTo(data, new InternetAddress(address, port));
+    }
+
+    string receiveFrom(ref string fromAddress, ref ushort fromPort, size_t size = 1024) {
+        auto buffer = new ubyte[](size);
+        Address src;
+        auto received = socket.receiveFrom(buffer, src);
+        fromAddress = src.toString();
+        fromPort = cast(InternetAddress)src.port;
+        return cast(string)buffer[0 .. received];
+    }
+
+    void close() {
+        socket.close();
+    }
+}

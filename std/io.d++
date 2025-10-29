@@ -1,0 +1,27 @@
+// io.d++ - D++ Standard Library - IO Module
+
+module io;
+
+// Prints a string to standard output
+fn print(msg: str) {
+    extern fn write_stdout(ptr: *u8, len: usize);
+    write_stdout(msg.ptr(), msg.len());
+}
+
+// Prints a string to standard output, followed by a newline
+fn println(msg: str) {
+    print(msg);
+    print("\n");
+}
+
+// Reads a line from standard input (until newline), returns a `str`
+fn read_line() -> str {
+    extern fn read_stdin_line(buf: *u8, max_len: usize) -> usize;
+
+    let mut buffer: [u8; 1024];
+    let len = read_stdin_line(buffer.ptr_mut(), 1024);
+    return str::from_utf8(buffer[0..len]);
+}
+
+// TODO: Add file I/O (open, read, write, close)
+// TODO: Add formatted printing (e.g., println!("Hello {}", name))

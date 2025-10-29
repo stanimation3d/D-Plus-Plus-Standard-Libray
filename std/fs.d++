@@ -1,0 +1,102 @@
+// fs.d++ - File System Standard Library for D++
+
+module std.fs;
+
+import std.io;
+
+extern "C" {
+    fn open(path: str, mode: str) -> int;
+    fn close(fd: int) -> int;
+    fn read(fd: int, buffer: mut u8[], size: usize) -> isize;
+    fn write(fd: int, buffer: u8[], size: usize) -> isize;
+    fn remove(path: str) -> int;
+    fn rename(old: str, new: str) -> int;
+    fn mkdir(path: str, mode: int) -> int;
+    fn rmdir(path: str) -> int;
+    fn stat(path: str, out_size: mut usize) -> int;
+}
+
+// File open modes
+const READ = "r";
+const WRITE = "w";
+const APPEND = "a";
+const READWRITE = "r+";
+
+// Read entire file as string
+fn read_file(path: str) -> str {
+    let size: usize = 0;
+    if stat(path, &size) != 0 {
+        panic("Failed to stat file");
+    }
+
+    let fd = open(path, READ);
+    if fd < 0 {
+        panic("Failed to open file");
+    }
+
+    let buffer: mut u8[] = new u8[size];
+    let bytes_read = read(fd, buffer, size);
+    close(fd);
+
+    if bytes_read < 0 {
+        panic("Failed to read file");
+    }
+
+    return str(buffer[0..bytes_read]);
+}
+
+// Write string to file
+fn write_file(path: str, content: str) -> void {
+    let fd = open(path, WRITE);
+    if fd < 0 {
+        panic("Failed to open file for writing");
+    }
+    let bytes = content.bytes();
+    let res = write(fd, bytes, bytes.len());
+    close(fd);
+    if res < 0 {
+        panic("Failed to write file");
+    }
+}
+
+// Append string to file
+fn append_file(path: str, content: str) -> void {
+    let fd = open(path, APPEND);
+    if fd < 0 {
+        panic("Failed to open file for appending");
+    }
+    let bytes = content.bytes();
+    let res = write(fd, bytes, bytes.len());
+    close(fd);
+    if res < 0 {
+        panic("Failed to append to file");
+    }
+}
+
+// Remove a file
+fn delete_file(path: str) -> void {
+    if remove(path) != 0 {
+        panic("Failed to delete file");
+    }
+}
+
+// Rename file
+fn rename_file(old_path: str, new_path: str) -> void {
+    if rename(old_path, new_path) != 0 {
+        panic("Failed to rename file");
+    }
+}
+
+// Create a directory
+fn make_dir(path: str, mode: int = 0o755) -> void {
+    if mkdir(path, mode) != 0 {
+        panic("Failed to create directory");
+    }
+}
+
+// Remove a directory
+fn remove_dir(path: str) -> void {
+    if rmdir(path) != 0 {
+        panic("Failed to remove directory");
+    }
+}

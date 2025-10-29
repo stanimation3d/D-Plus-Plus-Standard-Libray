@@ -1,0 +1,161 @@
+// collections.d++
+// D++ Collections Standard Library Module
+
+module std.collections;
+
+// --- Interfaces ---
+interface Iterable<T> {
+    Iterator<T> iterator();
+}
+
+interface Iterator<T> {
+    bool hasNext();
+    T next();
+}
+
+// --- Dynamic Array ---
+class ArrayList<T> : Iterable<T> {
+    private T[] data;
+    private size_t count;
+
+    this() {
+        data = new T[4];
+        count = 0;
+    }
+
+    void add(T item) {
+        ensureCapacity(count + 1);
+        data[count++] = item;
+    }
+
+    T get(size_t index) {
+        if (index >= count) throw new RangeError("Index out of bounds");
+        return data[index];
+    }
+
+    void set(size_t index, T item) {
+        if (index >= count) throw new RangeError("Index out of bounds");
+        data[index] = item;
+    }
+
+    size_t size() {
+        return count;
+    }
+
+    void removeAt(size_t index) {
+        if (index >= count) throw new RangeError("Index out of bounds");
+        for (size_t i = index; i < count - 1; i++) {
+            data[i] = data[i + 1];
+        }
+        count--;
+    }
+
+    private void ensureCapacity(size_t minCapacity) {
+        if (minCapacity > data.length) {
+            size_t newCapacity = data.length * 2;
+            if (newCapacity < minCapacity) newCapacity = minCapacity;
+            auto newData = new T[newCapacity];
+            for (size_t i = 0; i < count; i++) {
+                newData[i] = data[i];
+            }
+            data = newData;
+        }
+    }
+
+    override Iterator<T> iterator() {
+        return new ArrayListIterator(this);
+    }
+
+    private class ArrayListIterator : Iterator<T> {
+        private ArrayList!T list;
+        private size_t index = 0;
+
+        this(ArrayList!T list) {
+            this.list = list;
+        }
+
+        override bool hasNext() {
+            return index < list.size();
+        }
+
+        override T next() {
+            return list.get(index++);
+        }
+    }
+}
+
+// --- Stack ---
+class Stack<T> : Iterable<T> {
+    private ArrayList!T elements;
+
+    this() {
+        elements = new ArrayList!T();
+    }
+
+    void push(T item) {
+        elements.add(item);
+    }
+
+    T pop() {
+        if (elements.size() == 0) throw new RangeError("Pop from empty stack");
+        T value = elements.get(elements.size() - 1);
+        elements.removeAt(elements.size() - 1);
+        return value;
+    }
+
+    T peek() {
+        if (elements.size() == 0) throw new RangeError("Peek from empty stack");
+        return elements.get(elements.size() - 1);
+    }
+
+    bool isEmpty() {
+        return elements.size() == 0;
+    }
+
+    size_t size() {
+        return elements.size();
+    }
+
+    override Iterator<T> iterator() {
+        return elements.iterator();
+    }
+}
+
+// --- Queue ---
+class Queue<T> : Iterable<T> {
+    private ArrayList!T elements;
+
+    this() {
+        elements = new ArrayList!T();
+    }
+
+    void enqueue(T item) {
+        elements.add(item);
+    }
+
+    T dequeue() {
+        if (elements.size() == 0) throw new RangeError("Dequeue from empty queue");
+        T value = elements.get(0);
+        elements.removeAt(0);
+        return value;
+    }
+
+    T peek() {
+        if (elements.size() == 0) throw new RangeError("Peek from empty queue");
+        return elements.get(0);
+    }
+
+    bool isEmpty() {
+        return elements.size() == 0;
+    }
+
+    size_t size() {
+        return elements.size();
+    }
+
+    override Iterator<T> iterator() {
+        return elements.iterator();
+    }
+}
+
+// TODO: Set, Map, LinkedList, HashTable, PriorityQueue gibi veri yapıları da eklenebilir.

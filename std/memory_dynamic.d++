@@ -1,0 +1,64 @@
+// memory_dynamic.d++ - D++ Standard Library: Dynamic Memory Utilities (Ownership Model)
+
+namespace std::memory::dynamic {
+
+  @no_copy
+  struct UniquePtr<T> {
+    ptr: *T;
+    owns: bool;
+
+    init(value: T) {
+      this.ptr = alloc<T>();
+      *this.ptr = value;
+      this.owns = true;
+    }
+
+    func move() -> UniquePtr<T> {
+      let new_ptr = UniquePtr<T>();
+      new_ptr.ptr = this.ptr;
+      new_ptr.owns = this.owns;
+      this.ptr = null;
+      this.owns = false;
+      return new_ptr;
+    }
+
+    func get() -> *T {
+      return this.ptr;
+    }
+
+    func borrow() -> &T {
+      assert(this.ptr != null);
+      return &*this.ptr;
+    }
+
+    func borrow_mut() -> &mut T {
+      assert(this.ptr != null);
+      return &mut *this.ptr;
+    }
+
+    drop() {
+      if (this.owns && this.ptr != null) {
+        free<T>(this.ptr);
+      }
+    }
+  }
+
+  func alloc<T>() -> *T {
+    return platform::malloc(size_of<T>()) as *T;
+  }
+
+  func free<T>(ptr: *T) {
+    platform::free(ptr as *void);
+  }
+
+  func realloc<T>(ptr: *T, new_size: usize) -> *T {
+    return platform::realloc(ptr as *void, new_size) as *T;
+  }
+
+  extern namespace platform {
+    func malloc(size: usize) -> *void;
+    func free(ptr: *void);
+    func realloc(ptr: *void, size: usize) -> *void;
+  }
+
+} // namespace std::memory::dynamic

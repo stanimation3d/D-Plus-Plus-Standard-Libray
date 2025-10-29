@@ -1,0 +1,87 @@
+// math.d++ - D++ Math Standard Library
+
+// Temel matematik fonksiyonları
+func abs(x: int): int {
+    if x < 0 {
+        return -x;
+    }
+    return x;
+}
+
+func abs(x: float): float {
+    if x < 0.0 {
+        return -x;
+    }
+    return x;
+}
+
+func max(a: int, b: int): int {
+    if a > b {
+        return a;
+    }
+    return b;
+}
+
+func min(a: int, b: int): int {
+    if a < b {
+        return a;
+    }
+    return b;
+}
+
+func pow(base: float, exp: int): float {
+    let result = 1.0;
+    let b = base;
+    let e = abs(exp);
+    while e > 0 {
+        if e % 2 == 1 {
+            result *= b;
+        }
+        b *= b;
+        e /= 2;
+    }
+    if exp < 0 {
+        return 1.0 / result;
+    }
+    return result;
+}
+
+func sqrt(x: float): float {
+    if x < 0.0 {
+        panic("sqrt: negative input");
+    }
+    let guess = x / 2.0;
+    for i in 0..10 {
+        guess = 0.5 * (guess + x / guess);
+    }
+    return guess;
+}
+
+// Trigonometrik fonksiyonlar (varsayalım ki runtime içinde sin/cos mevcut)
+extern func sin(x: float): float;
+extern func cos(x: float): float;
+extern func tan(x: float): float;
+
+extern func atan(x: float): float;
+extern func atan2(y: float, x: float): float;
+extern func asin(x: float): float;
+extern func acos(x: float): float;
+
+// Sayı kontrol fonksiyonları
+func is_even(x: int): bool {
+    return x % 2 == 0;
+}
+
+func is_odd(x: int): bool {
+    return x % 2 != 0;
+}
+
+func clamp(x: float, min_val: float, max_val: float): float {
+    if x < min_val {
+        return min_val;
+    }
+    if x > max_val {
+        return max_val;
+    }
+    return x;
+}
